@@ -45,3 +45,7 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 /capturas/
+
+# entorno de Codespaces
+/CREDENCIALES-DEMO.md
+/.tempo.log

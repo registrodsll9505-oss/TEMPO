@@ -46,3 +46,6 @@ React vacía los formularios tras una acción. Enviándolos a mano se conserva l
 
 **D-15. Vista de semana agrupada por horario.**
 Ver la sección de interfaz en `docs/ARQUITECTURA.md`.
+
+**D-16. Entorno de GitHub Codespaces en modo producción.**
+El Codespace compila y sirve con `next start` en lugar del servidor de desarrollo: arranca más rápido, se comporta como un despliegue real y evita las restricciones de origen del modo desarrollo detrás del reenvío de puertos. La contraseña de la demo se genera al crear el entorno y queda en un archivo ignorado por git. Para las acciones de servidor se autoriza solo la dirección pública de ese Codespace.

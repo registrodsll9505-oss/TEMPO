@@ -1,0 +1,17 @@
+{
+  "name": "TEMPO",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/tempo",
+  "remoteUser": "node",
+  "postCreateCommand": "bash .devcontainer/preparar.sh",
+  "postStartCommand": "bash .devcontainer/iniciar.sh",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": { "label": "TEMPO", "onAutoForward": "openBrowser" }
+  },
+  "customizations": {
+    "codespaces": { "openFiles": ["CREDENCIALES-DEMO.md"] },
+    "vscode": { "extensions": ["dbaeumer.vscode-eslint", "bradlc.vscode-tailwindcss"] }
+  }
+}

@@ -1,0 +1,29 @@
+# Entorno para abrir TEMPO en GitHub Codespaces (o en un Dev Container local).
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/javascript-node:22
+    command: sleep infinity
+    volumes:
+      - ..:/workspaces/tempo:cached
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/tempo_dev
+      TEST_DATABASE_URL: postgres://postgres:postgres@db:5432/tempo_test
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tempo_dev
+    volumes:
+      - tempo_pgdata:/var/lib/postgresql/data
+      - ../scripts/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tempo_dev"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+volumes:
+  tempo_pgdata:

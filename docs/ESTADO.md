@@ -58,6 +58,7 @@ Ejecutado el 11 de octubre de 2026 en Node 22 y PostgreSQL 16.
 - Rendimiento con volúmenes grandes. No hay objetivos medidos ni pruebas de carga.
 - Sedes en zonas horarias distintas a la de la empresa dentro del calendario (la lógica de tiempo sí está probada en unidad).
 - Despliegue en un proveedor real.
+- El entorno de GitHub Codespaces en GitHub mismo. Se ensayaron en local sus dos scripts sobre una copia limpia del repositorio (instalar, migrar, sembrar, compilar y arrancar) y el reenvío de puertos con un proxy simulado; la creación real del Codespace no se pudo ejecutar desde el entorno de desarrollo.
 
 ## Limitaciones conocidas
 
@@ -87,6 +88,7 @@ Ejecutado el 11 de octubre de 2026 en Node 22 y PostgreSQL 16.
 
 **Operación**
 
+- La única forma de usarla sin instalar es GitHub Codespaces, que es un entorno personal de prueba: se apaga a los 30 minutos sin actividad y sus datos se pierden si se elimina.
 - Sin copias de seguridad, monitoreo, registro centralizado de errores ni entornos separados.
 
 ## Pendiente por fase

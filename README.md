@@ -21,6 +21,24 @@ Este repositorio contiene la **Fase 1 (base funcional)**: autenticación, varias
 - **Auditoría** de solo inserción: quién, qué, cuándo, valores anteriores y motivo.
 - **Aislamiento entre empresas** en la base de datos (Row-Level Security de PostgreSQL), además de las comprobaciones de la aplicación.
 
+## Usarla desde GitHub, sin instalar nada
+
+El repositorio está preparado para [GitHub Codespaces](https://github.com/features/codespaces), un computador en la nube que GitHub enciende desde el navegador.
+
+1. En la página del repositorio pulsa el botón verde **Code**, abre la pestaña **Codespaces** y elige **Create codespace on main**. También sirve este enlace directo: <https://codespaces.new/registrodsll9505-oss/TEMPO>
+2. Espera unos minutos la primera vez: se instala todo, se crea la base de datos con la empresa de demostración y se compila la aplicación.
+3. TEMPO se abre en una pestaña nueva. Si no, entra a la pestaña **Ports** y abre el puerto 3000.
+4. Los correos y la contraseña de la demostración quedan en el archivo `CREDENCIALES-DEMO.md`, que se abre solo. La contraseña se genera en tu entorno y no se guarda en el repositorio.
+
+Para tener en cuenta:
+
+- Es un entorno **personal y de prueba**. Se apaga solo tras 30 minutos sin actividad, y mientras está apagado la dirección no responde. Se vuelve a encender desde la misma pestaña **Codespaces**.
+- La dirección es privada: solo abre si has iniciado sesión en GitHub con tu cuenta. Así puedes usarla también desde el navegador del celular.
+- Los datos viven dentro de ese Codespace. Si lo eliminas, se pierden.
+- La cuenta gratuita de GitHub incluye 120 horas de cómputo y 15 GB de almacenamiento al mes; una máquina de 2 núcleos consume el doble, es decir, unas 60 horas reales. Al agotarse, GitHub bloquea el uso hasta el mes siguiente, salvo que haya un medio de pago registrado.
+
+Para que un equipo la use a diario hace falta un despliegue permanente (ver Despliegue).
+
 ## Requisitos
 
 - Node.js 22 o superior
@@ -85,6 +103,7 @@ src/components/calendar/ Vistas del calendario y editor de turnos
 tests/                   Unitarias y de integración (Vitest)
 e2e/                     Extremo a extremo (Playwright)
 docs/                    Arquitectura, decisiones y estado
+.devcontainer/           Entorno para GitHub Codespaces
 ```
 
 ## Despliegue
