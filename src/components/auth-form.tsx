@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { startTransition, useActionState } from "react";
 import type { ActionState } from "@/lib/action";
 import { FieldControl, type Field } from "./form-dialog";
 import { buttonClass } from "./ui";
@@ -13,7 +13,15 @@ export function AuthForm(props: {
 }) {
   const [state, formAction, pending] = useActionState(props.action, null);
   return (
-    <form action={formAction} className="grid gap-3.5">
+    <form
+      className="grid gap-3.5"
+      // Se envía a mano para conservar lo escrito si el servidor rechaza los datos.
+      onSubmit={(event) => {
+        event.preventDefault();
+        const form = new FormData(event.currentTarget);
+        startTransition(() => formAction(form));
+      }}
+    >
       {props.fields.map((field) => (
         <FieldControl key={field.name} field={field} errors={state?.fieldErrors?.[field.name]} />
       ))}

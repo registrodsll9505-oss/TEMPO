@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { startTransition, useActionState, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Pencil, Plus, X } from "lucide-react";
 import type { ActionState } from "@/lib/action";
 import { AREA_COLORS, AREA_COLOR_KEYS } from "@/lib/colors";
+import { TimeField } from "./time-field";
 import { buttonClass } from "./ui";
 
 export type FieldOption = { value: string; label: string };
@@ -90,9 +91,14 @@ function FormBody(props: {
 
   return (
     <form
-      action={formAction}
+      // Se envía a mano para que React no vacíe el formulario cuando el servidor rechaza los datos.
+      onSubmit={(event) => {
+        event.preventDefault();
+        const form = new FormData(event.currentTarget);
+        startTransition(() => formAction(form));
+      }}
       onChange={(event) => {
-        const target = event.target as HTMLInputElement;
+        const target = event.target as unknown as HTMLInputElement;
         if (target.name) setWatched((w) => ({ ...w, [target.name]: target.value }));
       }}
     >
@@ -187,6 +193,8 @@ export function FieldControl({ field, errors }: { field: Field; errors?: string[
     );
   } else if (field.type === "textarea") {
     control = <textarea {...common} defaultValue={defaultText} placeholder={field.placeholder} className="field-input" />;
+  } else if (field.type === "time") {
+    control = <TimeField id={id} name={field.name} label={field.label} defaultValue={defaultText} />;
   } else if (field.type === "color") {
     control = (
       <div role="radiogroup" aria-labelledby={`${id}-l`} className="flex flex-wrap gap-2 pt-0.5">

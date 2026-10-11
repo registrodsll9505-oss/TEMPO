@@ -203,3 +203,57 @@ dialog[open] {
     display: none !important;
   }
 }
+
+/* ---------- Turnos en el calendario ---------- */
+:root {
+  --ev-mix: 15%;
+}
+.ev {
+  --ev-ink: var(--ev-ink-l);
+  background: color-mix(in srgb, var(--ev) var(--ev-mix), var(--bg));
+  color: var(--ev-ink);
+  border-left: 3px solid var(--ev);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ev-mix: 26%;
+  }
+  :root:not([data-theme="light"]) .ev {
+    --ev-ink: var(--ev-ink-d);
+  }
+}
+:root[data-theme="dark"] {
+  --ev-mix: 26%;
+}
+:root[data-theme="dark"] .ev {
+  --ev-ink: var(--ev-ink-d);
+}
+/* Borrador: contorno punteado, relleno tenue. */
+.ev[data-status="borrador"],
+.ev[data-status="con_observaciones"] {
+  background: color-mix(in srgb, var(--ev) calc(var(--ev-mix) / 2.2), var(--bg));
+  outline: 1px dashed color-mix(in srgb, var(--ev) 70%, transparent);
+  outline-offset: -1px;
+}
+/* Publicado: relleno pleno, como un evento seleccionado. */
+.ev[data-status="publicado"] {
+  background: var(--ev);
+  color: #fff;
+  border-left-color: color-mix(in srgb, var(--ev) 70%, #000);
+}
+.ev[data-status="cancelado"] {
+  --ev: var(--ink-3);
+  color: var(--ink-3);
+  text-decoration: line-through;
+  background: var(--fill);
+}
+.ev[data-vacant="true"] {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0 5px,
+    color-mix(in srgb, var(--ev) 26%, transparent) 5px 6.5px
+  );
+}
+.ev[data-vacant="true"][data-status="publicado"] {
+  background-image: repeating-linear-gradient(-45deg, transparent 0 5px, rgba(255, 255, 255, 0.28) 5px 6.5px);
+}

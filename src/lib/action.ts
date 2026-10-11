@@ -61,6 +61,7 @@ export async function tenantAction<S extends z.ZodType>(options: {
 }): Promise<NonNullable<ActionState>> {
   const auth = await getAuth();
   if (!auth) return { ok: false, message: "Tu sesión terminó. Vuelve a ingresar." };
+  if (auth.user.mustChangePassword) return { ok: false, message: "Cambia tu contraseña temporal antes de continuar." };
   if (!auth.can(options.permission)) return { ok: false, message: "Tu rol no permite esta acción." };
 
   const parsed = options.schema.safeParse(options.input);
