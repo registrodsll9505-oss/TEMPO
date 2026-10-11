@@ -9,6 +9,7 @@ import { auditEvents, memberships, organizations, users } from "@/db/schema";
 import { formToObject, type ActionState } from "@/lib/action";
 import { getAuth } from "@/lib/auth/context";
 import { dummyPasswordHash, hashPassword, PASSWORD_MIN_LENGTH, verifyPassword } from "@/lib/auth/password";
+import { isRegistrationOpen } from "@/lib/auth/registration";
 import {
   createSession,
   destroyOtherSessions,
@@ -75,6 +76,9 @@ const registerSchema = z.object({
 });
 
 export async function register(_prev: ActionState, form: FormData): Promise<ActionState> {
+  if (!isRegistrationOpen()) {
+    return { ok: false, message: "El registro de empresas nuevas está cerrado en esta instalación." };
+  }
   const parsed = registerSchema.safeParse(formToObject(form));
   if (!parsed.success) return { ok: false, message: "Revisa los campos.", fieldErrors: fieldErrors(parsed.error) };
   const { name, email, password, tradeName } = parsed.data;

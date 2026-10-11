@@ -22,7 +22,7 @@ const DEMO_USERS = [
 ];
 
 async function main() {
-  const url = process.env.SEED_URL ?? process.env.DATABASE_URL;
+  const url = process.env.SEED_URL ?? process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL;
   const password = process.env.DEMO_PASSWORD;
   if (!url) throw new Error("Falta DATABASE_URL.");
   if (!password || password.length < 10) throw new Error("Define DEMO_PASSWORD (mínimo 10 caracteres) para crear los usuarios de demostración.");

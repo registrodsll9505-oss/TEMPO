@@ -12,7 +12,8 @@
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
-    "db:seed": "tsx scripts/seed-demo.ts"
+    "db:seed": "tsx scripts/seed-demo.ts",
+    "build:hosting": "npm run db:migrate && if [ -n \"$DEMO_PASSWORD\" ]; then npm run db:seed; fi && next build"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.4",
@@ -42,6 +43,6 @@
     "vitest": "^5.0.3"
   },
   "engines": {
-    "node": ">=22"
+    "node": "22.x"
   }
 }

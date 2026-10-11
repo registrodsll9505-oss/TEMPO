@@ -11,7 +11,18 @@ if (!url) {
 
 // En desarrollo, Next recarga módulos; se reutiliza la conexión para no agotar el pool.
 const globalForDb = globalThis as unknown as { __tempoSql?: ReturnType<typeof postgres> };
-const client = globalForDb.__tempoSql ?? postgres(url, { max: 10, onnotice: () => {} });
+const client =
+  globalForDb.__tempoSql ??
+  postgres(url, {
+    max: Number(process.env.DATABASE_POOL_MAX ?? 10),
+    // Sin sentencias preparadas: así funciona también detrás de un agrupador de conexiones
+    // en modo transacción (PgBouncer, como el de Neon). Todo el aislamiento por empresa usa
+    // ajustes locales a la transacción, que ese modo respeta.
+    prepare: false,
+    idle_timeout: 20,
+    connect_timeout: 15,
+    onnotice: () => {},
+  });
 if (process.env.NODE_ENV !== "production") globalForDb.__tempoSql = client;
 
 /**

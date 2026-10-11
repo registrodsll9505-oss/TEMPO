@@ -4,12 +4,28 @@ import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth-form";
 import { getAuth } from "@/lib/auth/context";
 import { PASSWORD_MIN_LENGTH } from "@/lib/auth/password";
+import { isRegistrationOpen } from "@/lib/auth/registration";
 import { register } from "../actions";
 
 export const metadata: Metadata = { title: "Crear cuenta" };
 
 export default async function RegisterPage() {
   if (await getAuth()) redirect("/inicio");
+  if (!isRegistrationOpen()) {
+    return (
+      <>
+        <h1 className="mb-1 text-xl font-bold">Registro cerrado</h1>
+        <p className="text-ink-2">
+          Esta instalación no admite empresas nuevas. Si tu empresa ya usa TEMPO, pide a un administrador que te agregue como usuario.
+        </p>
+        <p className="mt-5 text-center">
+          <Link href="/ingresar" className="font-medium text-ink underline underline-offset-2">
+            Ir a ingresar
+          </Link>
+        </p>
+      </>
+    );
+  }
   return (
     <>
       <h1 className="mb-1 text-xl font-bold">Crea la cuenta de tu empresa</h1>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth-form";
 import { getAuth } from "@/lib/auth/context";
+import { isRegistrationOpen } from "@/lib/auth/registration";
 import { login } from "../actions";
 
 export const metadata: Metadata = { title: "Ingresar" };
@@ -21,12 +22,14 @@ export default async function LoginPage() {
           { name: "password", label: "Contraseña", type: "password", required: true, autoComplete: "current-password" },
         ]}
       />
-      <p className="mt-5 text-center text-ink-2">
-        ¿Tu empresa aún no usa TEMPO?{" "}
-        <Link href="/registro" className="font-medium text-ink underline underline-offset-2">
-          Crea una cuenta
-        </Link>
-      </p>
+      {isRegistrationOpen() ? (
+        <p className="mt-5 text-center text-ink-2">
+          ¿Tu empresa aún no usa TEMPO?{" "}
+          <Link href="/registro" className="font-medium text-ink underline underline-offset-2">
+            Crea una cuenta
+          </Link>
+        </p>
+      ) : null}
       <p className="mt-3 text-center text-[13px] text-ink-2">
         Si olvidaste tu contraseña, pide a un administrador de tu empresa que la restablezca.
       </p>

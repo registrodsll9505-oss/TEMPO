@@ -56,7 +56,10 @@ export function CalendarApp({ data }: { data: CalendarData }) {
   const [hidden, setHidden] = useState<string[]>([]);
   const [hiddenLoaded, setHiddenLoaded] = useState(false);
   const [query, setQuery] = useState("");
-  const [editor, setEditor] = useState<{ key: number; draft: ShiftDraft } | null>(null);
+  const [editor, setEditor] = useState<{ key: number; shiftId: string | null; draft: ShiftDraft } | null>(null);
+  // Mientras una acción está en curso y hasta que llegan los datos actualizados, el calendario
+  // no acepta clics: así nunca se abre un turno con una versión que ya cambió.
+  const [syncing, startAction] = useTransition();
   const [toast, setToast] = useState<{ ok: boolean; text: string } | null>(null);
   const [now, setNow] = useState<{ date: string; minute: number } | null>(null);
   const [confirmCopy, setConfirmCopy] = useState(false);
@@ -150,14 +153,28 @@ export function CalendarApp({ data }: { data: CalendarData }) {
     });
   }
 
-  const openShift = useCallback((shift: CalShift) => setEditor({ key: Date.now(), draft: draftFromShift(shift, data) }), [data]);
+  const runAction = useCallback(
+    <T,>(action: () => Promise<T>): Promise<T> =>
+      new Promise<T>((resolve, reject) => {
+        startAction(async () => {
+          try {
+            resolve(await action());
+          } catch (error) {
+            reject(error);
+          }
+        });
+      }),
+    [],
+  );
+
+  const openShift = useCallback((shift: CalShift) => setEditor({ key: Date.now(), shiftId: shift.id, draft: draftFromShift(shift, data) }), [data]);
   const createShift = useCallback(
     (seed: CreateSeed) => {
       if (data.sites.length === 0 || data.areas.length === 0) {
         setToast({ ok: false, text: "Para programar turnos primero crea una sede y un área en Estructura." });
         return;
       }
-      setEditor({ key: Date.now(), draft: emptyDraft(seed, data) });
+      setEditor({ key: Date.now(), shiftId: null, draft: emptyDraft(seed, data) });
     },
     [data],
   );
@@ -165,7 +182,7 @@ export function CalendarApp({ data }: { data: CalendarData }) {
   const handlers: EditorHandlers = useMemo(
     () => ({
       save: async (draft) => {
-        const result = await saveShift({
+        const result = await runAction(() => saveShift({
           id: draft.id ?? "",
           version: draft.version,
           siteId: draft.siteId,
@@ -179,27 +196,27 @@ export function CalendarApp({ data }: { data: CalendarData }) {
           breakMinutes: draft.breakMinutes,
           breakTreatment: draft.breakTreatment,
           notes: draft.notes,
-        });
+        }));
         if (result.ok) setToast({ ok: true, text: draft.id ? "Turno guardado." : "Turno creado como borrador." });
         return result;
       },
       remove: async (draft) => {
-        const result = await deleteShift({ id: draft.id, version: draft.version });
+        const result = await runAction(() => deleteShift({ id: draft.id, version: draft.version }));
         if (result.ok) setToast({ ok: true, text: "Borrador eliminado." });
         return result;
       },
       transition: async (draft, key, reason) => {
-        const result = await transitionShift({ id: draft.id, version: draft.version, key, reason });
+        const result = await runAction(() => transitionShift({ id: draft.id, version: draft.version, key, reason }));
         if (result.ok) setToast({ ok: true, text: "Estado del turno actualizado." });
         return result;
       },
       history: getShiftHistory,
     }),
-    [],
+    [runAction],
   );
 
   async function onMove(shift: CalShift, startsAt: string, endsAt: string) {
-    const result = await moveShift({ id: shift.id, version: shift.version, startsAt, endsAt });
+    const result = await runAction(() => moveShift({ id: shift.id, version: shift.version, startsAt, endsAt }));
     if (!result.ok) setToast({ ok: false, text: result.message ?? "No se pudo mover el turno." });
     else {
       const start = toZoned(startsAt, data.zone);
@@ -209,7 +226,7 @@ export function CalendarApp({ data }: { data: CalendarData }) {
 
   async function onCopyWeek() {
     setCopying(true);
-    const result = await copyWeek({ weekStart: startOfWeek(data.anchor), siteId: data.siteId ?? "" });
+    const result = await runAction(() => copyWeek({ weekStart: startOfWeek(data.anchor), siteId: data.siteId ?? "" }));
     setCopying(false);
     setConfirmCopy(false);
     setToast({ ok: result.ok, text: result.message ?? (result.ok ? "Semana copiada." : "No se pudo copiar la semana.") });
@@ -232,6 +249,7 @@ export function CalendarApp({ data }: { data: CalendarData }) {
     titleRest = String(last.year);
   }
 
+  const editorShift = editor?.shiftId ? data.shifts.find((shift) => shift.id === editor.shiftId) : undefined;
   const weekViews = data.view === "semana" || data.view === "equipo" || data.view === "lista";
   const sidebarSlot = mounted ? document.getElementById("sidebar-slot") : null;
   const pick = (date: string) => go({ view: "dia", anchor: date });
@@ -316,17 +334,28 @@ export function CalendarApp({ data }: { data: CalendarData }) {
         </div>
       </div>
 
-      {data.view === "dia" || data.view === "semana" ? (
-        <TimeGrid key={`${data.view}-${data.anchor}`} days={days} today={data.today} zone={data.zone} shifts={shifts} canEdit={data.perms.edit} stack={data.view === "semana" || narrow} now={now} onOpen={openShift} onCreate={createShift} onMove={onMove} onPickDay={pick} />
-      ) : data.view === "mes" ? (
-        <MonthGrid days={days} anchor={data.anchor} today={data.today} zone={data.zone} shifts={shifts} canEdit={data.perms.edit} onOpen={openShift} onCreate={createShift} onPickDay={pick} />
-      ) : data.view === "equipo" ? (
-        <TeamGrid days={days} today={data.today} zone={data.zone} shifts={shifts} people={teamPeople} canEdit={data.perms.edit} onOpen={openShift} onCreate={createShift} onPickDay={pick} />
-      ) : (
-        <ListView days={days} today={data.today} zone={data.zone} shifts={shifts} onOpen={openShift} />
-      )}
+      <div className="flex min-h-0 flex-1 flex-col" inert={syncing} aria-busy={syncing}>
+        {data.view === "dia" || data.view === "semana" ? (
+          <TimeGrid key={`${data.view}-${data.anchor}`} days={days} today={data.today} zone={data.zone} shifts={shifts} canEdit={data.perms.edit} stack={data.view === "semana" || narrow} now={now} onOpen={openShift} onCreate={createShift} onMove={onMove} onPickDay={pick} />
+        ) : data.view === "mes" ? (
+          <MonthGrid days={days} anchor={data.anchor} today={data.today} zone={data.zone} shifts={shifts} canEdit={data.perms.edit} onOpen={openShift} onCreate={createShift} onPickDay={pick} />
+        ) : data.view === "equipo" ? (
+          <TeamGrid days={days} today={data.today} zone={data.zone} shifts={shifts} people={teamPeople} canEdit={data.perms.edit} onOpen={openShift} onCreate={createShift} onPickDay={pick} />
+        ) : (
+          <ListView days={days} today={data.today} zone={data.zone} shifts={shifts} onOpen={openShift} />
+        )}
+      </div>
 
-      {editor ? <ShiftEditor key={editor.key} data={data} initial={editor.draft} handlers={handlers} onClose={() => setEditor(null)} /> : null}
+      {editor ? (
+        // Si el turno abierto cambia en el servidor, el editor se vuelve a cargar con la versión nueva.
+        <ShiftEditor
+          key={`${editor.key}:${editorShift?.version ?? 0}`}
+          data={data}
+          initial={editorShift ? draftFromShift(editorShift, data) : editor.draft}
+          handlers={handlers}
+          onClose={() => setEditor(null)}
+        />
+      ) : null}
 
       {toast ? (
         <div role={toast.ok ? "status" : "alert"} className="no-print fixed bottom-5 left-1/2 z-[60] flex w-[min(520px,calc(100vw-24px))] -translate-x-1/2 items-start gap-2.5 rounded-xl bg-raised px-3.5 py-2.5 shadow-pop">

@@ -37,7 +37,7 @@ Para tener en cuenta:
 - Los datos viven dentro de ese Codespace. Si lo eliminas, se pierden.
 - La cuenta gratuita de GitHub incluye 120 horas de cómputo y 15 GB de almacenamiento al mes; una máquina de 2 núcleos consume el doble, es decir, unas 60 horas reales. Al agotarse, GitHub bloquea el uso hasta el mes siguiente, salvo que haya un medio de pago registrado.
 
-Para que un equipo la use a diario hace falta un despliegue permanente (ver Despliegue).
+Para tenerla siempre disponible en una dirección fija, sigue la sección de despliegue gratuito.
 
 ## Requisitos
 
@@ -87,6 +87,9 @@ Las pruebas **borran y recrean** la base indicada en `TEST_DATABASE_URL`. Por se
 | `DATABASE_URL` | Conexión a PostgreSQL de la aplicación |
 | `TEST_DATABASE_URL` | Base desechable para las pruebas |
 | `DEMO_PASSWORD` | Contraseña de los usuarios de demostración que crea `db:seed` |
+| `DATABASE_URL_UNPOOLED` | Opcional. Conexión directa para migraciones cuando `DATABASE_URL` pasa por un agrupador de conexiones |
+| `DATABASE_POOL_MAX` | Opcional. Conexiones máximas por instancia (10 por defecto) |
+| `REGISTRO_ABIERTO` | Opcional. `false` impide registrar empresas nuevas |
 
 Ningún secreto se guarda en el repositorio: `.env` está ignorado por git.
 
@@ -106,11 +109,27 @@ docs/                    Arquitectura, decisiones y estado
 .devcontainer/           Entorno para GitHub Codespaces
 ```
 
-## Despliegue
+## Despliegue gratuito (Vercel + Neon)
 
-Aún no se ha desplegado en ningún entorno. La aplicación es un proyecto Next.js estándar con una base PostgreSQL, así que funciona en cualquier plataforma que ofrezca ambas cosas. Antes de exponerla a usuarios reales hay que resolver los pendientes de seguridad y operación listados en [docs/ESTADO.md](docs/ESTADO.md).
+El repositorio incluye `vercel.json`. En cada despliegue se aplican las migraciones y después se compila (`npm run build:hosting`).
 
-El usuario de base de datos debe poder crear la extensión `btree_gist` y el rol `tempo_app` (las migraciones lo hacen).
+1. Entra a [vercel.com](https://vercel.com) con tu cuenta de GitHub y elige el plan **Hobby**.
+2. **Add New → Project**, autoriza el repositorio `TEMPO` e impórtalo. Pulsa **Deploy**. Este primer intento **falla a propósito** con "Falta DATABASE_URL": todavía no hay base de datos.
+3. En el proyecto abre **Storage → Create Database → Neon**, plan **Free**, región de Washington D. C. (US East), y conéctala al proyecto en los tres entornos. Esto crea solo las variables `DATABASE_URL` y `DATABASE_URL_UNPOOLED`.
+4. Opcional, en **Settings → Environment Variables**: `DEMO_PASSWORD` (mínimo 10 caracteres) si quieres la empresa de demostración. Se vuelve a crear en cada despliegue.
+5. En **Deployments**, abre el menú del último intento y elige **Redeploy**.
+6. Abre la dirección `*.vercel.app` que te da Vercel y crea tu empresa en `/registro`.
+7. Cuando tu empresa esté creada, agrega la variable `REGISTRO_ABIERTO` con el valor `false` y vuelve a desplegar, para que nadie más pueda registrar empresas en tu dirección.
+
+Desde ese momento, cada cambio que llegue a `main` se publica solo.
+
+Límites que conviene conocer:
+
+- **Vercel Hobby es solo para uso personal no comercial.** Si TEMPO se usa para cobrar a clientes, o en la operación de un negocio, corresponde un plan de pago o otro proveedor.
+- **Neon Free**: 1 GB de almacenamiento y 100 horas de cómputo al mes por proyecto. La base se duerme tras 5 minutos sin uso y la primera carga después tarda un poco más. Si se agota el cómputo del mes, la base queda suspendida hasta el mes siguiente; los datos no se borran.
+- No hay copias de seguridad configuradas ni recuperación de contraseña por correo. Antes de cargar datos reales de personas, revisa los pendientes de [docs/ESTADO.md](docs/ESTADO.md).
+
+Requisito para cualquier otro proveedor: PostgreSQL 16 o superior y un usuario que pueda crear la extensión `btree_gist` y el rol `tempo_app` (las migraciones lo hacen).
 
 ## Documentación
 

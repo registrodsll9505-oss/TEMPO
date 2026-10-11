@@ -47,6 +47,8 @@ Ejecutado el 11 de octubre de 2026 en Node 22 y PostgreSQL 16.
 6. Arrastrar un borrador cambia su horario; copiar semana crea borradores en la siguiente.
 7. Un usuario invitado debe cambiar su contraseña temporal antes de entrar; la temporal deja de servir; tras ocho fallos el correo se bloquea.
 
+Las pruebas de extremo a extremo fallaron una vez en doce ejecuciones, en el flujo de aprobación, y no se conservó el detalle. La causa probable era abrir un turno en el instante entre guardar y recibir los datos actualizados. Se corrigió bloqueando el calendario durante ese instante y recargando el editor si el turno cambia; después hubo seis ejecuciones seguidas sin fallos.
+
 **Revisión visual.** Capturas de todas las pantallas en escritorio (claro y oscuro) y de la vista de día en móvil, revisadas a mano.
 
 ### Lo que no se probó
@@ -57,7 +59,7 @@ Ejecutado el 11 de octubre de 2026 en Node 22 y PostgreSQL 16.
 - Navegadores distintos de Chromium; dispositivos reales; lectores de pantalla.
 - Rendimiento con volúmenes grandes. No hay objetivos medidos ni pruebas de carga.
 - Sedes en zonas horarias distintas a la de la empresa dentro del calendario (la lógica de tiempo sí está probada en unidad).
-- Despliegue en un proveedor real.
+- Despliegue real en Vercel y Neon. Se ensayó en local lo que ese despliegue necesita: las migraciones y las 56 pruebas con un dueño de base de datos sin superusuario, con `CREATEROLE` y `BYPASSRLS` (como en un PostgreSQL administrado), el comando de compilación con migración y siembra, el registro cerrado, y las 7 pruebas de extremo a extremo sin sentencias preparadas. No se pudo probar contra el agrupador de conexiones de Neon ni en la plataforma de Vercel.
 - El entorno de GitHub Codespaces en GitHub mismo. Se ensayaron en local sus dos scripts sobre una copia limpia del repositorio (instalar, migrar, sembrar, compilar y arrancar) y el reenvío de puertos con un proxy simulado; la creación real del Codespace no se pudo ejecutar desde el entorno de desarrollo.
 
 ## Limitaciones conocidas
@@ -65,7 +67,7 @@ Ejecutado el 11 de octubre de 2026 en Node 22 y PostgreSQL 16.
 **Seguridad y cuentas**
 
 - No hay recuperación de contraseña por correo ni verificación del correo al registrarse: requieren un servicio de envío que aún no está conectado. Mientras tanto, un administrador restablece contraseñas.
-- El registro es abierto y no tiene límite por dirección IP ni captcha. El límite de intentos de ingreso es por correo, no por IP.
+- El registro es abierto por defecto y no tiene límite por dirección IP ni captcha. Se puede cerrar con `REGISTRO_ABIERTO=false`. El límite de intentos de ingreso es por correo, no por IP.
 - No hay verificación en dos pasos ni inicio de sesión corporativo.
 - No se envía cabecera Content-Security-Policy.
 - No existe el rol de administrador de plataforma (soporte entre empresas).

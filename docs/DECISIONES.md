@@ -49,3 +49,9 @@ Ver la sección de interfaz en `docs/ARQUITECTURA.md`.
 
 **D-16. Entorno de GitHub Codespaces en modo producción.**
 El Codespace compila y sirve con `next start` en lugar del servidor de desarrollo: arranca más rápido, se comporta como un despliegue real y evita las restricciones de origen del modo desarrollo detrás del reenvío de puertos. La contraseña de la demo se genera al crear el entorno y queda en un archivo ignorado por git. Para las acciones de servidor se autoriza solo la dirección pública de ese Codespace.
+
+**D-17. Despliegue gratuito en Vercel con Neon.**
+Vercel publica el proyecto Next.js directamente desde GitHub y Neon ofrece PostgreSQL con plan gratuito e integración que inyecta las variables de conexión. Consecuencias en el código: la conexión no usa sentencias preparadas (compatible con el agrupador en modo transacción), las migraciones usan la conexión directa (`DATABASE_URL_UNPOOLED`) y corren antes de compilar. Limitación aceptada: el plan Hobby de Vercel es solo para uso no comercial. La aplicación no depende de nada propio de Vercel, así que puede moverse a cualquier servidor Node con PostgreSQL.
+
+**D-18. El calendario se bloquea mientras una acción espera datos nuevos.**
+Las acciones se ejecutan dentro de una transición de React y la zona del calendario queda inerte hasta que llega la versión actualizada. Evita abrir un turno con una versión que ya cambió, lo que terminaba en un aviso de conflicto.
