@@ -1,26 +1,205 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+  Sistema visual de TEMPO.
+  Referencia: aplicaciones de escritorio de macOS (ventana clara, barra lateral gris,
+  líneas finas, marcador rojo para "hoy"). Tipografía del sistema para que en cada
+  dispositivo se sienta nativa.
+*/
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --sidebar: #f3f3f5;
+  --raised: #ffffff;
+  --ink: #1c1c1e;
+  --ink-2: #5f5f64;
+  --ink-3: #8a8a8f;
+  --line: rgba(60, 60, 67, 0.13);
+  --line-strong: rgba(60, 60, 67, 0.26);
+  --fill: rgba(118, 118, 128, 0.1);
+  --fill-2: rgba(118, 118, 128, 0.18);
+  --weekend: rgba(118, 118, 128, 0.045);
+  --accent: #e5484d;
+  --accent-ink: #c02b35;
+  --focus: #2f7de1;
+  --ok: #1f7a43;
+  --warn: #8a5a00;
+  --danger: #c02b35;
+  --shadow-pop: 0 0 0 0.5px rgba(0, 0, 0, 0.12), 0 12px 32px rgba(0, 0, 0, 0.16), 0 2px 6px rgba(0, 0, 0, 0.08);
+  --event-alpha: 0.16;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #1d1d1f;
+    --sidebar: #28282b;
+    --raised: #2c2c2f;
+    --ink: #f2f2f7;
+    --ink-2: #b1b1b8;
+    --ink-3: #85858c;
+    --line: rgba(235, 235, 245, 0.11);
+    --line-strong: rgba(235, 235, 245, 0.24);
+    --fill: rgba(118, 118, 128, 0.22);
+    --fill-2: rgba(118, 118, 128, 0.36);
+    --weekend: rgba(235, 235, 245, 0.028);
+    --accent: #ff5d62;
+    --accent-ink: #ff8a8e;
+    --focus: #5aa2ff;
+    --ok: #6fd596;
+    --warn: #f0c060;
+    --danger: #ff8a8e;
+    --shadow-pop: 0 0 0 0.5px rgba(255, 255, 255, 0.14), 0 14px 36px rgba(0, 0, 0, 0.55);
+    --event-alpha: 0.26;
   }
 }
 
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #1d1d1f;
+  --sidebar: #28282b;
+  --raised: #2c2c2f;
+  --ink: #f2f2f7;
+  --ink-2: #b1b1b8;
+  --ink-3: #85858c;
+  --line: rgba(235, 235, 245, 0.11);
+  --line-strong: rgba(235, 235, 245, 0.24);
+  --fill: rgba(118, 118, 128, 0.22);
+  --fill-2: rgba(118, 118, 128, 0.36);
+  --weekend: rgba(235, 235, 245, 0.028);
+  --accent: #ff5d62;
+  --accent-ink: #ff8a8e;
+  --focus: #5aa2ff;
+  --ok: #6fd596;
+  --warn: #f0c060;
+  --danger: #ff8a8e;
+  --shadow-pop: 0 0 0 0.5px rgba(255, 255, 255, 0.14), 0 14px 36px rgba(0, 0, 0, 0.55);
+  --event-alpha: 0.26;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-sidebar: var(--sidebar);
+  --color-raised: var(--raised);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fill: var(--fill);
+  --color-fill-2: var(--fill-2);
+  --color-weekend: var(--weekend);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-focus: var(--focus);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --shadow-pop: var(--shadow-pop);
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--focus) 28%, transparent);
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Campos de formulario */
+.field-input {
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  border: 1px solid var(--line-strong);
+  background: var(--raised);
+  color: var(--ink);
+  font: inherit;
+}
+.field-input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 0;
+  border-color: transparent;
+}
+.field-input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+.field-input:disabled {
+  background: var(--fill);
+  color: var(--ink-2);
+}
+textarea.field-input {
+  min-height: 72px;
+  resize: vertical;
+}
+
+dialog {
+  color: var(--ink);
+}
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.28);
+}
+dialog[open] {
+  animation: pop-in 140ms ease-out;
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+}
+
+/* Barras de desplazamiento discretas en las rejillas */
+.quiet-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--fill-2) transparent;
+}
+
+/* Turno vacante: trama diagonal, para no depender solo del color */
+.vacant-pattern {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0 5px,
+    color-mix(in srgb, var(--ev) 22%, transparent) 5px 6px
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
 }

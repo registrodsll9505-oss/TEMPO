@@ -1,0 +1,14 @@
+# Base de datos local para desarrollo. Uso: docker compose up -d
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tempo_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - tempo_pgdata:/var/lib/postgresql/data
+      - ./scripts/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+volumes:
+  tempo_pgdata:
